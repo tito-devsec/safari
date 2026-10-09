@@ -19,21 +19,25 @@ export default function App() {
   useEffect(() => {
     // Generic reveal: any element with data-reveal fades/slides in when it scrolls into view.
     const ctx = gsap.context(() => {
+      // fromTo with explicit end values: safe under React StrictMode's double mount.
       gsap.utils.toArray('[data-reveal]').forEach((el) => {
         const from = el.dataset.reveal || 'up'
-        const vars = { opacity: 0, duration: 1, ease: 'power3.out' }
-        if (from === 'up') vars.y = 50
-        if (from === 'left') vars.x = -60
-        if (from === 'right') vars.x = 60
-        if (from === 'scale') vars.scale = 0.9
-        gsap.from(el, { ...vars, scrollTrigger: { trigger: el, start: 'top 88%', once: true } })
+        const start = { opacity: 0, x: 0, y: 0, scale: 1 }
+        if (from === 'up') start.y = 50
+        if (from === 'left') start.x = -60
+        if (from === 'right') start.x = 60
+        if (from === 'scale') start.scale = 0.9
+        gsap.fromTo(el, start, {
+          opacity: 1, x: 0, y: 0, scale: 1, duration: 1, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+        })
       })
 
       // Staggered card groups
       gsap.utils.toArray('[data-stagger]').forEach((group) => {
         const items = group.querySelectorAll('[data-item]')
-        gsap.from(items, {
-          opacity: 0, y: 60, duration: 0.9, ease: 'power3.out', stagger: 0.15,
+        gsap.fromTo(items, { opacity: 0, y: 60 }, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.15,
           scrollTrigger: { trigger: group, start: 'top 85%', once: true },
         })
       })

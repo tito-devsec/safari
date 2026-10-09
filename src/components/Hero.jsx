@@ -27,11 +27,13 @@ export default function Hero() {
   // Entrance animation
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // fromTo (not from): with React StrictMode's double mount, a plain from() can record the
+      // hidden start state as its end value and never become visible.
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.3 })
-      tl.from('.hero-pill', { y: 30, opacity: 0, duration: 0.8 })
-        .from('.hero-title .word', { y: 60, opacity: 0, duration: 0.9, stagger: 0.08 }, '-=0.4')
-        .from('.hero-sub', { y: 30, opacity: 0, duration: 0.8 }, '-=0.5')
-        .from('.hero-btns > *', { y: 30, opacity: 0, duration: 0.7, stagger: 0.15 }, '-=0.5')
+      tl.fromTo('.hero-pill', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 })
+        .fromTo('.hero-title .word', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.08 }, '-=0.4')
+        .fromTo('.hero-sub', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.5')
+        .fromTo('.hero-btns > *', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, stagger: 0.15 }, '-=0.5')
       // subtle slow zoom on the poster while the video loads
       gsap.fromTo('.hero-poster', { scale: 1 }, { scale: 1.08, duration: 14, ease: 'none', repeat: -1, yoyo: true })
     }, root)
