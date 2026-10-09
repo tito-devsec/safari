@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.*
+.DS_Store
+*.log
+
+# personal study files that live in this folder but are not part of the site
+*.pdf
+*.docx
