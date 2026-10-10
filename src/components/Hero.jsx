@@ -1,11 +1,18 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import { ArrowCircleRight } from './Icons.jsx'
+import { ArrowUpRight, ChevronLeft, ChevronRight } from './Icons.jsx'
 
-// Same YouTube background video as the live site (plays 0:15 → 1:20 on a loop, muted).
+// Background video (kept from the previous version): plays 0:15 → 1:20 on a loop, muted.
 const VIDEO_ID = '3zUuxEiMcVo'
 const START = 15
 const END = 80
+
+const CARDS = [
+  { title: 'Mnemba Island', img: '/images/hero-card-mnemba.jpg' },
+  { title: 'Spice Farm', img: '/images/hero-card-spice.jpg' },
+  { title: 'Jozani & Mtende', img: '/images/hero-card-jozani.jpg' },
+]
+const GAP = 20
 
 function loadYouTubeApi() {
   if (window.YT && window.YT.Player) return Promise.resolve(window.YT)
@@ -23,24 +30,23 @@ function loadYouTubeApi() {
 export default function Hero() {
   const root = useRef(null)
   const videoHost = useRef(null)
+  const track = useRef(null)
+  const busy = useRef(false)
+  // Order of the cards. The track renders the list twice so sliding never shows a gap.
+  const [order, setOrder] = useState(CARDS.map((_, i) => i))
 
-  // Entrance animation
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // fromTo (not from): with React StrictMode's double mount, a plain from() can record the
-      // hidden start state as its end value and never become visible.
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.3 })
-      tl.fromTo('.hero-pill', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 })
-        .fromTo('.hero-title .word', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.08 }, '-=0.4')
-        .fromTo('.hero-sub', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.5')
-        .fromTo('.hero-btns > *', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, stagger: 0.15 }, '-=0.5')
-      // subtle slow zoom on the poster while the video loads
+      tl.fromTo('.hero-title .line', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.15 })
+        .fromTo('.hero-btns > *', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, stagger: 0.12 }, '-=0.4')
+        .fromTo('.hcard', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.12 }, '-=0.3')
+        .fromTo('.hero-tagline', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, '-=0.4')
       gsap.fromTo('.hero-poster', { scale: 1 }, { scale: 1.08, duration: 14, ease: 'none', repeat: -1, yoyo: true })
     }, root)
     return () => ctx.revert()
   }, [])
 
-  // Background video
   useEffect(() => {
     let player, timer, cancelled = false
     loadYouTubeApi().then((YT) => {
@@ -66,26 +72,62 @@ export default function Hero() {
     return () => { cancelled = true; clearInterval(timer); try { player && player.destroy() } catch { /* ignore */ } }
   }, [])
 
-  const words = (text) => text.split(' ').map((w, i) => <span className="word" key={i}>{w}&nbsp;</span>)
+  const step = () => track.current.querySelector('.hcard').getBoundingClientRect().width + GAP
+
+  const next = () => {
+    if (busy.current) return
+    busy.current = true
+    gsap.to(track.current, {
+      x: -step(), duration: 0.6, ease: 'power3.inOut',
+      onComplete: () => { setOrder((o) => [...o.slice(1), o[0]]); gsap.set(track.current, { x: 0 }); busy.current = false },
+    })
+  }
+  const prev = () => {
+    if (busy.current) return
+    busy.current = true
+    setOrder((o) => [o[o.length - 1], ...o.slice(0, -1)])
+    gsap.fromTo(track.current, { x: -step() }, { x: 0, duration: 0.6, ease: 'power3.inOut', onComplete: () => { busy.current = false } })
+  }
+
+  const cards = [...order, ...order]
 
   return (
     <section id="home" className="hero" ref={root}>
       <div className="hero-bg">
-        <img className="hero-poster" src="/images/hero-bg.png" alt="" />
+        <img className="hero-poster" src="/images/zanzibar-aerial.jpg" alt="" />
         <div className="hero-video"><div ref={videoHost} /></div>
         <div className="hero-overlay" />
       </div>
 
-      <div className="container hero-content">
-        <span className="hero-pill">Royal flame tour</span>
+      <div className="hero-content">
         <h1 className="hero-title">
-          {words('"Discover Wild beauty')}<span className="highlight">{words('Of Tanzania"')}</span>
+          <span className="line">Explore <span className="script">Zanzibar</span></span>
+          <span className="line">With a Local..</span>
         </h1>
-        <p className="hero-sub">Explore Serengeti, Ngorongoro and Zanzibar with Local Guides</p>
         <div className="hero-btns">
-          <a href="#tours" className="btn btn-outline">Explore Packages <ArrowCircleRight className="btn-icon" /></a>
-          <a href="#contact" className="btn btn-gold">Book Tour</a>
+          <a href="#packages" className="btn-yellow">Packages</a>
+          <a href="#contact" className="btn-white">Book Now</a>
         </div>
+
+        <div className="hero-carousel">
+          <button className="carousel-btn prev" aria-label="Previous" onClick={prev}><ChevronLeft /></button>
+          <div className="hero-viewport">
+            <div className="hero-track" ref={track}>
+              {cards.map((idx, i) => (
+                <article className="hcard" key={`${idx}-${i}`} aria-hidden={i >= order.length}>
+                  <img src={CARDS[idx].img} alt={CARDS[idx].title} />
+                  <a href="#tours" className="hcard-label">
+                    <span className="icon-sq"><ArrowUpRight /></span>
+                    <span>{CARDS[idx].title}</span>
+                  </a>
+                </article>
+              ))}
+            </div>
+          </div>
+          <button className="carousel-btn next" aria-label="Next" onClick={next}><ChevronRight /></button>
+        </div>
+
+        <p className="hero-tagline">Tours, transfers &amp; experiences, The local way. Hakuna matata.</p>
       </div>
     </section>
   )

@@ -10,11 +10,7 @@ export default function ScrollTop() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
   return (
-    <button
-      className={`scroll-top ${show ? 'show' : ''}`}
-      aria-label="Scroll to top"
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-    >
+    <button className={`scroll-top ${show ? 'show' : ''}`} aria-label="Scroll to top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
       <ArrowUp />
     </button>
   )

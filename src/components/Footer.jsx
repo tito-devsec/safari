@@ -1,21 +1,28 @@
 import { NAV } from './Header.jsx'
+import { Facebook, Instagram, WhatsApp } from './Icons.jsx'
 
 export default function Footer() {
   return (
-    <footer className="site-footer">
+    <footer id="contact" className="site-footer">
       <div className="container">
         <div className="footer-top">
-          <a href="#home" className="footer-logo"><img src="/images/logo.png" alt="Royal Flame Safari" /></a>
+          <div className="footer-brand">
+            <img src="/images/islandboy-logo.png" alt="islandBoy Zanzibar Travel" />
+            <p>Tours, transfers &amp; experiences, the local way. Hakuna matata.</p>
+          </div>
           <nav className="footer-nav" aria-label="Footer">
-            <ul>
-              {NAV.map((n) => (
-                <li key={n.label}><a href={n.href} className={n.active ? 'active' : ''}>{n.label === 'Day Trips' ? 'Day trips' : n.label}</a></li>
-              ))}
-            </ul>
+            <ul>{NAV.map((n) => <li key={n.label}><a href={n.href}>{n.label}</a></li>)}</ul>
           </nav>
+          <div className="footer-social">
+            <a href="#" aria-label="WhatsApp"><WhatsApp /></a>
+            <a href="#" aria-label="Instagram"><Instagram /></a>
+            <a href="#" aria-label="Facebook"><Facebook /></a>
+          </div>
         </div>
-        <div className="footer-divider" />
-        <p className="copyright">© 2026 All Right Reserved | Designed by Mosheky</p>
+        <div className="footer-bottom">
+          <span>© 2026 islandBoy Zanzibar Travel. All rights reserved.</span>
+          <span>Zanzibar, Tanzania</span>
+        </div>
       </div>
     </footer>
   )
